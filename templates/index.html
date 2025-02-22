@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAN File Transfer</title>
+</head>
+<body>
+    <h2>Upload a File</h2>
+    <form id="uploadForm">
+        <input type="file" name="file" required><br><br>
+        <input type="text" name="recipient" placeholder="Enter recipient IP" required><br><br>
+        <button type="submit">Upload</button>
+    </form>
+
+    <h2>Your Files</h2>
+    <button onclick="fetchFiles()">Refresh Files</button>
+    <ul id="fileList"></ul>
+
+    <script>
+        document.getElementById("uploadForm").onsubmit = async function (e) {
+            e.preventDefault();
+
+            let formData = new FormData(this);
+            let response = await fetch("/upload", {
+                method: "POST",
+                body: formData
+            });
+
+            let result = await response.json();
+            alert(result.message);
+        };
+
+        async function fetchFiles() {
+            let response = await fetch("/get_files");
+            let files = await response.json();
+
+            let fileList = document.getElementById("fileList");
+            fileList.innerHTML = "";
+
+            files.forEach(file => {
+                let li = document.createElement("li");
+                li.innerHTML = `${file.filename} 
+                    <button onclick="downloadFile('${file.filename}')">Download</button>`;
+                fileList.appendChild(li);
+            });
+        }
+
+        async function downloadFile(filename) {
+            window.location.href = `/download/${filename}`;
+        }
+    </script>
+</body>
+</html>
